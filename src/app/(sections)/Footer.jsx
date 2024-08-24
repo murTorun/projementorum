@@ -12,10 +12,10 @@ const Footer = () => {
             </div>
             <div className="flex sm:space-x-4 flex-col  sm:flex-row">
               <a href="#" className="btn btn-ghost">
-                Gizlilik Politikası
+                LinkedIn
               </a>
               <a href="#" className="btn btn-ghost">
-                Kullanım Şartları
+                Instagram
               </a>
             </div>
           </div>
