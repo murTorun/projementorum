@@ -4,7 +4,7 @@ import { useSession, signIn, signOut } from "next-auth/react";
 import Link from "next/link";
 import { FaGoogle, FaLinkedin, FaArrowLeft } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
-
+import { useSearchParams } from "next/navigation";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,6 +14,9 @@ export default function Login() {
   const isLoading = status === "loading";
   const isAuthenticated = status === "authenticated";
 
+  const searchParams = useSearchParams();
+  const reftype = searchParams.get("reftype");
+  const registerLink = reftype ? `/register?reftype=${reftype}` : "/register";
   if (isLoading)
     return (
       <div className="flex justify-center items-center h-screen bg-gradient-to-br from-blue-500 via-gray-800 to-gray-900">
@@ -121,13 +124,21 @@ export default function Login() {
 
           <div className="mt-6 grid grid-cols-2 gap-3">
             <button
-              onClick={() => signIn("google")}
+              onClick={() =>
+                signIn("google", {
+                  callbackUrl: `/feed?reftype=${reftype}`,
+                })
+              }
               className="w-full inline-flex justify-center py-2 px-4 border border-orange-700 rounded-md bg-gray-800 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white shadow-lg shadow-orange-500/35 transition duration-300"
             >
               <FcGoogle className="w-5 h-5" />
             </button>
             <button
-              onClick={() => signIn("linkedin")}
+              onClick={() =>
+                signIn("linkedin", {
+                  callbackUrl: `/feed?reftype=${reftype}`,
+                })
+              }
               className="w-full inline-flex justify-center py-2 px-4 border border-blue-700 rounded-md bg-gray-800 text-sm font-medium text-blue-400 hover:bg-gray-700 shadow-lg shadow-blue-500/35 transition duration-300"
             >
               <FaLinkedin className="w-5 h-5" />
@@ -143,7 +154,7 @@ export default function Login() {
             Şifreni mi unuttun?
           </Link>
           <Link
-            href="/register"
+            href={registerLink}
             className="font-medium text-blue-400 hover:text-blue-300"
           >
             Hesabın yok mu? Kayıt ol

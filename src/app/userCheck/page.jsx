@@ -23,14 +23,15 @@ export default function UserCheck() {
       fetchUserDetails();
     }
   }, [session]);
+  console.log(session);
   return (
     <div>
       <h1 className="text-3xl font-bold">{userDetails?.name}</h1>
       <h1 className="text-3xl font-bold">{userDetails?.surname}</h1>
       <h1 className="text-3xl font-bold">{userDetails?.email}</h1>
       <br />
-      <h1 className="text-3xl font-bold">{session.user?.email}</h1>
-      <h1 className="text-3xl font-bold">{session.user?.image}</h1>
+      <h1 className="text-3xl font-bold">{session?.user?.email}</h1>
+      <h1 className="text-3xl font-bold">{session?.user?.image}</h1>
     </div>
   );
 }

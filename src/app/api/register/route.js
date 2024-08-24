@@ -7,7 +7,18 @@ export async function POST(req) {
     const { name, surname, email, password } = await req.json();
     const hashedPassword = await bcrypt.hash(password, 10);
     await connectMongoDB();
-    await User.create({ name, surname, email, password: hashedPassword });
+    const url = new URL(req.url);
+    console.log("Url = ", url);
+    console.log("Url.search = ", url.searchParams);
+    const reftype = url.searchParams.get("reftype");
+    console.log("Reftype =  ", reftype);
+    await User.create({
+      name,
+      surname,
+      email,
+      password: hashedPassword,
+      reftype,
+    });
 
     return NextResponse.json(
       { message: "User created successfully" },

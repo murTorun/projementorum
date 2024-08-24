@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import Link from "next/link";
 import { FaLinkedin, FaArrowLeft } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
@@ -13,9 +14,45 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
   const router = useRouter();
 
+  const { data: session, status } = useSession();
+  const isLoading = status === "loading";
+  const isAuthenticated = status === "authenticated";
+
+  const searchParams = useSearchParams(); // Use useSearchParams
+  const reftype = searchParams.get("reftype"); // Get the query parameter
+  const post_url = reftype
+    ? `/api/register?reftype=${reftype}`
+    : "/api/register";
+
+  const loginLink = reftype ? `/login?reftype=${reftype}` : "/login";
+
+  if (isLoading)
+    return (
+      <div className="flex justify-center items-center h-screen bg-gradient-to-br from-blue-500 via-gray-800 to-gray-900">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-white"></div>
+      </div>
+    );
+
+  /* if (isAuthenticated) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-500 via-gray-800 to-gray-900 text-white p-4 sm:p-8">
+        <p className="mb-4 text-xl text-center">
+          {session.user.name} olarak giriş yaptınız
+        </p>
+        <button
+          className="btn btn-outline btn-accent mb-4"
+          onClick={() => signOut()}
+        >
+          Çıkış Yap
+        </button>
+        <Link href="/userCheck" className="btn btn-primary">
+          Kullanıcı Kontrolü
+        </Link>
+      </div>
+    );
+  } */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -41,7 +78,7 @@ export default function Register() {
         return;
       }
 
-      const result = await fetch("/api/register", {
+      const result = await fetch(post_url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -51,7 +88,12 @@ export default function Register() {
 
       if (result.ok) {
         // Redirect user to the /userCheck page after registration
-        router.push("/userCheck");
+        // sign in with credentials
+        signIn("credentials", {
+          email,
+          password,
+          callbackUrl: `/feed?reftype=${reftype}`,
+        });
       } else {
         setError("Kayıt işlemi gerçekleştirilemedi. Lütfen tekrar deneyin.");
       }
@@ -163,13 +205,17 @@ export default function Register() {
 
           <div className="mt-6 grid grid-cols-2 gap-3">
             <button
-              onClick={() => signIn("google", { callbackUrl: "/login" })}
+              onClick={() =>
+                signIn("google", { callbackUrl: `/feed?reftype=${reftype}` })
+              }
               className="w-full inline-flex justify-center py-2 px-4 border border-orange-700 rounded-md bg-gray-800 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white shadow-lg shadow-orange-500/50 transition duration-300"
             >
               <FcGoogle className="w-5 h-5" />
             </button>
             <button
-              onClick={() => signIn("linkedin", { callbackUrl: "/login" })}
+              onClick={() =>
+                signIn("linkedin", { callbackUrl: `/feed?reftype=${reftype}` })
+              }
               className="w-full inline-flex justify-center py-2 px-4 border border-gray-700 rounded-md bg-gray-800 text-sm font-medium text-blue-400 hover:bg-gray-700 shadow-lg shadow-blue-500/50 transition duration-300"
             >
               <FaLinkedin className="w-5 h-5" />
@@ -179,7 +225,7 @@ export default function Register() {
 
         <div className="mt-6 text-center text-sm">
           <Link
-            href="/login"
+            href={loginLink}
             className="font-medium text-blue-400 hover:text-blue-300"
           >
             Zaten hesabınız var mı? Giriş yapın

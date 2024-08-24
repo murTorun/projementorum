@@ -4,19 +4,24 @@ const userSchema = new Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: false,
     },
     surname: {
       type: String,
-      required: true,
+      required: false,
     },
     email: {
       type: String,
-      required: true,
+      required: false,
     },
     password: {
       type: String,
-      required: true,
+      required: false,
+    },
+    reftype: {
+      type: String,
+      required: false,
+      default: null,
     },
   },
   {

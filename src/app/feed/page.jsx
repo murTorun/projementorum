@@ -1,13 +1,46 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
-
+import Image from "next/image";
+import { useSearchParams, useRouter } from "next/navigation";
 const UserPanel = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activePage, setActivePage] = useState("Bul");
   const { data: session, status } = useSession();
   const user = session?.user;
+  const src = user?.image ? user?.image : "";
+  const searchParams = useSearchParams();
+  const reftype = searchParams.get("reftype");
+  const email = user?.email;
+  const router = useRouter();
+  console.log(searchParams);
+  useEffect(() => {
+    const updateUser = async () => {
+      if (reftype && email) {
+        try {
+          const res = await fetch("/api/updateUserReftype", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reftype, email }),
+          });
+
+          const data = await res.json();
+          if (data.success) {
+            // Redirect to URL without query parameters
+            router.push("/feed");
+          } else {
+            console.error("Failed to update user:", data.error);
+          }
+        } catch (error) {
+          console.error("Error updating user:", error);
+        }
+      }
+    };
+
+    updateUser();
+  }, [reftype, email, router]);
+
   const navLinks = [
     {
       name: "Seminer Takvimi",
@@ -47,11 +80,23 @@ const UserPanel = () => {
           </motion.button>
           <div className="flex items-center space-x-4">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <img
-                src={user.image}
-                alt="Profile"
-                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover"
-              />
+              {src ? (
+                <Image
+                  src={src}
+                  alt="Profile Picture"
+                  width={60}
+                  height={60}
+                  className="rounded-full"
+                />
+              ) : (
+                <svg
+                  className="w-16 h-16 text-gray-300 rounded-full"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M24 24H0v-1.5a6.5 6.5 0 016.5-6.5h11a6.5 6.5 0 016.5 6.5V24zM12 13.5a6 6 0 100-12 6 6 0 000 12z" />
+                </svg>
+              )}
             </motion.div>
             <div className="relative">
               <motion.button
@@ -84,7 +129,7 @@ const UserPanel = () => {
                     exit={{ opacity: 0, y: -10 }}
                   >
                     <button
-                      onClick={() => signOut()}
+                      onClick={() => signOut({ callbackUrl: "/" })}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Çıkış Yap

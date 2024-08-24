@@ -3,15 +3,10 @@ import User from "@/app/models/user";
 import nextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import GitHubProvider from "next-auth/providers/github";
 import LinkedInProvider from "next-auth/providers/linkedin";
 import GoogleProvider from "next-auth/providers/google";
 export const authOptions = {
   providers: [
-    GitHubProvider({
-      clientId: process.env.GITHUB_ID,
-      clientSecret: process.env.GITHUB_SECRET,
-    }),
     LinkedInProvider({
       clientId: process.env.LINKEDIN_CLIENT_ID,
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
@@ -68,6 +63,29 @@ export const authOptions = {
 
   session: {
     strategy: "jwt",
+  },
+  callbacks: {
+    async signIn({ user, account, profile, email, credentials }) {
+      try {
+        await connectMongoDB();
+
+        let existingUser = await User.findOne({ email: user.email });
+
+        if (!existingUser) {
+          // Create a new user if not found
+          existingUser = await User.create({
+            email: user.email,
+            name: user.name,
+            createdAt: new Date(),
+          });
+        }
+
+        return true;
+      } catch (error) {
+        console.log("Error during signIn callback:", error);
+        return false;
+      }
+    },
   },
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
