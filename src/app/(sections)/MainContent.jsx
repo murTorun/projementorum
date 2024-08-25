@@ -1,10 +1,12 @@
+"use client";
 import Board from "./Board";
-
+import { useRouter } from "next/navigation";
 const MainContent = () => {
+  const router = useRouter();
   return (
     <div>
       <main className="container mx-auto px-4 py-16">
-        <div className="hero">
+        <div className="hero mb-8 sm:mb-16">
           <div className="hero-content text-center text-white p-0">
             <div className="max-w-3xl">
               <h1 className="text-3xl sm:text-5xl font-bold mb-8">
@@ -14,13 +16,23 @@ const MainContent = () => {
                 Projementorum, mentor ve ekip arkadaşı bulma sürecinde size
                 rehberlik edecek yenilikçi bir platformdur.
               </p>
-              <button className="btn btn-primary btn-lg">Hemen Başla</button>
+
+              {
+                // Make this button redirect to /register page
+              }
+
+              <button
+                onClick={() => router.push("/register")}
+                className="btn btn-primary btn-lg"
+              >
+                Hemen Başla
+              </button>
             </div>
           </div>
         </div>
         <Board />
         {/* Features */}
-        <div className="mt-16">
+        <div className="mt-16" id="özellikler">
           <h2 className="text-3xl font-bold text-center text-white mb-8">
             Neden Projementorum?
           </h2>
@@ -160,7 +172,12 @@ const MainContent = () => {
             Projementorum ile mentorluk desteği alın, ekip arkadaşları bulun, ve
             projelerinizi bir üst seviyeye taşıyın.
           </p>
-          <button className="btn btn-primary btn-lg">Şimdi Katılın</button>
+          <button
+            onClick={() => router.push("/register")}
+            className="btn btn-primary btn-lg"
+          >
+            Şimdi Katılın
+          </button>
         </div>
       </main>
     </div>

@@ -3,9 +3,28 @@
 import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 const Nav = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { data: session } = useSession();
+
+  const AuthButton = () => {
+    if (session) {
+      return (
+        <Link href="/feed" className="btn btn-primary">
+          Panele Git
+        </Link>
+      );
+    } else {
+      return (
+        <Link href="/login" className="btn btn-primary">
+          Giriş Yap
+        </Link>
+      );
+    }
+  };
+
   return (
     <div>
       <header className="container mx-auto px-4 py-6">
@@ -46,21 +65,17 @@ const Nav = () => {
 
           {/* Desktop menu */}
           <div className="hidden md:flex md:space-x-4">
-            <a href="#" className="btn btn-ghost text-white">
-              Ana Sayfa
-            </a>
-            <a href="#" className="btn btn-ghost text-white">
-              Hakkımızda
-            </a>
-            <a href="#" className="btn btn-ghost text-white">
+            <a href="#özellikler" className="btn btn-ghost text-white">
               Özellikler
             </a>
-            <a href="#" className="btn btn-ghost text-white">
+            <a
+              href="https://www.instagram.com/projementorum/"
+              target="_blank"
+              className="btn btn-ghost text-white"
+            >
               İletişim
             </a>
-            <a href="/login" className="btn btn-primary">
-              Giriş Yap
-            </a>
+            <AuthButton />
           </div>
         </nav>
 
@@ -91,12 +106,7 @@ const Nav = () => {
             >
               İletişim
             </a>
-            <Link
-              href="/login"
-              className="block py-2 px-4 text-sm bg-white text-blue-600"
-            >
-              Giriş Yap
-            </Link>
+            <AuthButton />
           </div>
         )}
       </header>

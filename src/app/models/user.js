@@ -23,6 +23,11 @@ const userSchema = new Schema(
       required: false,
       default: null,
     },
+    createdPost: {
+      type: Boolean,
+      default: false,
+      required: false,
+    },
   },
   {
     timestamps: true,

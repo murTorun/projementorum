@@ -91,29 +91,28 @@ const provinces = [
   "Osmaniye",
   "Düzce",
 ].sort((a, b) => a.localeCompare(b));
-
 const Board = () => {
   const [selectedEducation, setSelectedEducation] = useState(["Üniversite"]);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [searchType, setSearchType] = useState("mentor");
 
   return (
-    <div className="container mx-auto mt-16 p-0 ">
+    <div className="container mx-auto mt-4 sm:mt-8 ">
       <div className="card bg-base-100 shadow-xl">
-        <div className="card-body p-4 py-5 ">
-          <h2 className="card-title justify-center text-2xl mb-4 ">
+        <div className="card-body mt-4 p-2 sm:p-4 sm:py-5">
+          <h2 className="card-title justify-center text-xl sm:text-2xl mb-4">
             Aradıkların Burada!
           </h2>
 
           {/* Search Bar */}
-          <div className="form-control ">
-            <div className="input-group flex gap-2">
+          <div className="form-control">
+            <div className="input-group flex sm:flex-row sm:gap-2">
               <input
                 type="text"
-                placeholder="Search"
+                placeholder="Eğitim Teknolojileri, Biyoteknoloji, Robotik Kodlama..."
                 className="input input-bordered w-full"
               />
-              <button className="btn btn-square">
+              <button className="btn btn-square mt-0">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-6 w-6"
@@ -133,10 +132,10 @@ const Board = () => {
           </div>
 
           {/* Filters */}
-          <div className="mt-12 flex flex-col md:flex-row md:justify-around md:gap-3">
+          <div className="mt-8 sm:mt-12 flex flex-col gap-4 sm:flex-row sm:justify-around sm:gap-3">
             {/* Mentor or Ekip Arkadaşı Filter */}
-            <div className="mb-4 md:mb-0 md:w-fit-content">
-              <h3 className="text-lg font-semibold mb-2 ">Arama Türü</h3>
+            <div className="sm:mb-0 sm:w-fit-content">
+              <h3 className="text-lg font-semibold mb-2">Arama Türü</h3>
               <div className="flex gap-2 flex-wrap">
                 <button
                   className={`btn btn-sm ${
@@ -158,7 +157,7 @@ const Board = () => {
             </div>
 
             {/* Education Level Filters */}
-            <div className="mb-4 md:mb-0  md:w-fit-content">
+            <div className="sm:mb-0 sm:w-fit-content">
               <h3 className="text-lg font-semibold mb-2">Eğitim Seviyesi</h3>
               <div className="flex flex-wrap gap-2">
                 {educationLevels.map((level) => (
@@ -184,8 +183,8 @@ const Board = () => {
             </div>
 
             {/* Location Filter */}
-            <div className=" md:w-fit-content">
-              <h3 className="text-lg font-semibold mb-2 ">Konum</h3>
+            <div className="sm:w-fit-content">
+              <h3 className="text-lg font-semibold mb-2">Konum</h3>
               <select
                 className="select select-bordered w-full max-w-xs"
                 value={selectedLocation}
@@ -203,7 +202,7 @@ const Board = () => {
           </div>
 
           {/* Placeholder for future content */}
-          <div className="h-px w-full bg-black my-12"></div>
+          <div className="h-px w-full bg-black my-8 sm:my-12"></div>
           <PersonCardDisplay />
         </div>
       </div>

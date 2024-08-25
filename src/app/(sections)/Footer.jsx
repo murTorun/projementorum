@@ -8,13 +8,20 @@ const Footer = () => {
               <h3 className="text-2xl font-bold mb-2 text-center md:text-left">
                 Projementorum
               </h3>
-              <p>© 2024 Tüm hakları saklıdır.</p>
             </div>
             <div className="flex sm:space-x-4 flex-col  sm:flex-row">
-              <a href="#" className="btn btn-ghost">
+              <a
+                href="https://www.linkedin.com/company/projementorum/"
+                target="_blank"
+                className="btn btn-ghost"
+              >
                 LinkedIn
               </a>
-              <a href="#" className="btn btn-ghost">
+              <a
+                href="https://www.instagram.com/projementorum/"
+                target="_blank"
+                className="btn btn-ghost"
+              >
                 Instagram
               </a>
             </div>

@@ -4,7 +4,7 @@ import { useSession, signIn, signOut } from "next-auth/react";
 import Link from "next/link";
 import { FaGoogle, FaLinkedin, FaArrowLeft } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,6 +17,7 @@ export default function Login() {
   const searchParams = useSearchParams();
   const reftype = searchParams.get("reftype");
   const registerLink = reftype ? `/register?reftype=${reftype}` : "/register";
+  const router = useRouter();
   if (isLoading)
     return (
       <div className="flex justify-center items-center h-screen bg-gradient-to-br from-blue-500 via-gray-800 to-gray-900">
@@ -25,20 +26,12 @@ export default function Login() {
     );
 
   if (isAuthenticated) {
+    router.push("/feed");
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-500 via-gray-800 to-gray-900 text-white p-4 sm:p-8">
         <p className="mb-4 text-xl text-center">
           {session.user.name} olarak giriş yaptınız
         </p>
-        <button
-          className="btn btn-outline btn-accent mb-4"
-          onClick={() => signOut()}
-        >
-          Çıkış Yap
-        </button>
-        <Link href="/userCheck" className="btn btn-primary">
-          Kullanıcı Kontrolü
-        </Link>
       </div>
     );
   }
