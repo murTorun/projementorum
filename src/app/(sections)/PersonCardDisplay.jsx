@@ -61,14 +61,14 @@ const PersonCardDisplay = ({
 
   if (error) {
     return (
-      <div className="p-4 bg-base-200 rounded-lg">Error: {error.message}</div>
+      <div className="p-4 bg-base-200 rounded-lg">Hata: {error.message}</div>
     );
   }
 
   if (posts.length === 0) {
     return (
       <div className="p-4 bg-base-200 rounded-lg">
-        <p className="text-center text-gray-500">No results found.</p>
+        <p className="text-center text-gray-500">Sonuç bulunamadı.</p>
       </div>
     );
   }
