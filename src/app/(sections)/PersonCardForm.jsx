@@ -3,67 +3,101 @@ import { useEffect, useState } from "react";
 import PersonCard from "./PersonCard";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { educationLevels } from "@/app/utils/educationLevels";
+import { provinces } from "@/app/utils/provinces";
 const PersonCardForm = () => {
   const { data: session } = useSession();
   const [isUpdating, setIsUpdating] = useState(false);
   const [noPhoto, setNoPhoto] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [formData, setFormData] = useState({
-    name: session?.user?.name || "",
+    name: "",
     title: "",
     description: "",
     tags: "",
     linkedin: "",
-    email: session?.user?.email || "",
-    src: session?.user?.image || "",
+    email: "",
+    src: "",
     type: "Mentor",
-    loggedEmail: session?.user?.email || "",
+    location: "",
+    educationLevels: [],
+    loggedEmail: "",
   });
 
   const router = useRouter();
+
   useEffect(() => {
     if (!session?.user?.email) {
       window.location.href = "/api/auth/signin";
     } else {
       const fetchExistingPost = async () => {
         try {
-          const response = await fetch(
-            `/api/createPost?email=${encodeURIComponent(session?.user?.email)}`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-          const data = await response.json();
-          if (data.post && data.post.length > 0) {
-            const existingPost = data.post[0];
-            setFormData({
-              name: existingPost.name,
-              title: existingPost.title,
-              description: existingPost.description,
-              tags: existingPost.tags.join(", "),
-              linkedin: existingPost.linkedin,
-              email: existingPost.email,
-              src: existingPost.src,
-              type: existingPost.type,
-              loggedEmail: existingPost.loggedEmail,
-            });
-            setIsUpdating(true);
+          // First, try to load from localStorage
+          const savedFormData = localStorage.getItem("personCardFormData");
+          if (savedFormData) {
+            const parsedData = JSON.parse(savedFormData);
+            setFormData(parsedData);
+            setIsUpdating(parsedData.id ? true : false);
           } else {
-            // If no existing post, set default values
-            setFormData({
-              name: session?.user?.name ?? "",
-              title: "",
-              description: "",
-              tags: "",
-              linkedin: "",
-              email: session?.user?.email ?? "",
-              src: session?.user?.image ?? "",
-              type: "Mentor",
-              loggedEmail: session.user.email,
-            });
+            // If not in localStorage, fetch from API
+            const response = await fetch(
+              `/api/createPost?email=${encodeURIComponent(
+                session?.user?.email
+              )}`,
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              }
+            );
+            const data = await response.json();
+            if (data.post && data.post.length > 0) {
+              const existingPost = data.post[0];
+              const newFormData = {
+                id: existingPost._id, // Add this line to store the post ID
+                name: existingPost.name,
+                title: existingPost.title,
+                description: existingPost.description,
+                tags: existingPost.tags.join(", "),
+                linkedin: existingPost.linkedin,
+                email: existingPost.email,
+                src: existingPost.src,
+                type: existingPost.type,
+                loggedEmail: existingPost.loggedEmail,
+                location: existingPost.location || "",
+                educationLevels: existingPost.educationLevels || [],
+              };
+              setFormData(newFormData);
+              setIsUpdating(true);
+              // Save to localStorage
+              localStorage.setItem(
+                "personCardFormData",
+                JSON.stringify(newFormData)
+              );
+            } else {
+              // If no existing post, set default values
+              const defaultFormData = {
+                name: session?.user?.name ?? "",
+                title: "",
+                description: "",
+                tags: "",
+                linkedin: "",
+                email: session?.user?.email ?? "",
+                src: session?.user?.image ?? "",
+                type: "Mentor",
+                loggedEmail: session.user.email,
+                location: "",
+                educationLevels: [],
+              };
+              setFormData(defaultFormData);
+              setIsUpdating(false);
+              // Save default values to localStorage
+              localStorage.setItem(
+                "personCardFormData",
+                JSON.stringify(defaultFormData)
+              );
+            }
           }
         } catch (error) {
           console.error("Error fetching existing post:", error);
@@ -75,11 +109,42 @@ const PersonCardForm = () => {
   }, [session]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    const { name, value, type, checked } = e.target;
+    if (name === "educationLevels") {
+      setFormData((prevData) => {
+        const updatedLevels = checked
+          ? [...prevData.educationLevels, value]
+          : prevData.educationLevels.filter((level) => level !== value);
+
+        const updatedFormData = {
+          ...prevData,
+          educationLevels: updatedLevels,
+        };
+
+        // Save to localStorage
+        localStorage.setItem(
+          "personCardFormData",
+          JSON.stringify(updatedFormData)
+        );
+        console.log(updatedFormData.educationLevels);
+        return updatedFormData;
+      });
+    } else {
+      setFormData((prevData) => {
+        const updatedFormData = {
+          ...prevData,
+          [name]: value,
+        };
+
+        // Save to localStorage
+        localStorage.setItem(
+          "personCardFormData",
+          JSON.stringify(updatedFormData)
+        );
+
+        return updatedFormData;
+      });
+    }
   };
 
   const handleImageUpload = (e) => {
@@ -95,6 +160,11 @@ const PersonCardForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.educationLevels.length === 0) {
+      setFeedbackMessage("En az bir eğitim seviyesi seçmelisiniz.");
+      return;
+    }
+
     try {
       const passMail = session.user.email;
 
@@ -116,10 +186,13 @@ const PersonCardForm = () => {
             ? "İlan başarıyla güncellendi!"
             : "İlan başarıyla oluşturuldu!"
         );
+        // Clear localStorage after successful submission
+        localStorage.removeItem("personCardFormData");
         // Wait .5 seconds before redirecting with next/navigation
         setTimeout(() => {
-          router.push("/feed?reftype=main");
+          router.replace("/feed?reftype=main");
         }, 500);
+        router.refresh();
       } else {
         throw new Error(data.error);
       }
@@ -135,9 +208,14 @@ const PersonCardForm = () => {
   };
 
   const handleDelete = async () => {
+    if (!formData.id) {
+      setFeedbackMessage("Silinecek ilan bulunamadı.");
+      return;
+    }
+
     try {
       const response = await fetch(
-        `/api/createPost?email=${encodeURIComponent(session?.user?.email)}`,
+        `/api/createPost?id=${encodeURIComponent(formData.id)}`,
         {
           method: "DELETE",
           headers: {
@@ -148,6 +226,8 @@ const PersonCardForm = () => {
       const data = await response.json();
       if (data.success) {
         setFeedbackMessage("İlan başarıyla silindi!");
+        // Clear localStorage after successful deletion
+        localStorage.removeItem("personCardFormData");
         setFormData({
           name: session?.user?.name ?? "",
           title: "",
@@ -158,6 +238,8 @@ const PersonCardForm = () => {
           src: session?.user?.image ?? "",
           type: "Mentor",
           loggedEmail: session.user.email,
+          location: "",
+          educationLevels: [],
         });
         setIsUpdating(false);
       } else {
@@ -280,7 +362,7 @@ const PersonCardForm = () => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Profil Resmi (isteğe bağlı)
+            Profil Resmi
           </label>
           <input
             type="file"
@@ -314,6 +396,60 @@ const PersonCardForm = () => {
               Resim istemiyorum
             </label>
           </div>
+        </div>
+        <div>
+          <label
+            htmlFor="location"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Konum (isteğe bağlı)
+          </label>
+          <select
+            name="location"
+            id="location"
+            value={formData.location}
+            onChange={handleChange}
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          >
+            <option value="">Konum Seçin</option>
+            {provinces.map((province) => (
+              <option key={province} value={province}>
+                {province}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Eğitim Seviyesi* (En az bir tane seçin)
+          </label>
+          <div className="space-y-2">
+            {educationLevels.map((level) => (
+              <div key={level} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={`educationLevel-${level}`}
+                  name="educationLevels"
+                  value={level}
+                  checked={formData.educationLevels.includes(level)}
+                  onChange={handleChange}
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+                <label
+                  htmlFor={`educationLevel-${level}`}
+                  className="ml-2 block text-sm text-gray-900"
+                >
+                  {level}
+                </label>
+              </div>
+            ))}
+          </div>
+          {formData.educationLevels.length === 0 && (
+            <p className="text-red-500 text-sm mt-2">
+              En az bir eğitim seviyesi seçmelisiniz.
+            </p>
+          )}
         </div>
         <div>
           <label
@@ -375,6 +511,8 @@ const PersonCardForm = () => {
           linkedin={formData?.linkedin}
           email={formData?.email}
           src={formData?.src}
+          location={formData?.location}
+          educationLevel={formData?.educationLevel}
           isForm={true}
         />
       </div>

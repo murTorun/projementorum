@@ -12,6 +12,8 @@ const PostSchema = new Schema(
     type: { type: String, enum: ["Mentor", "Ekip Arkadaşı"], required: true },
     // TODO: KONUM VE EĞİTİM SEVİYESİ
     loggedEmail: { type: String, required: true },
+    location: { type: String, required: false },
+    educationLevels: [{ type: String, required: true }],
   },
   { timestamps: true }
 );

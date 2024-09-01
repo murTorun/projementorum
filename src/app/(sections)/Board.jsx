@@ -1,6 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
+import debounce from "lodash/debounce";
 import PersonCardDisplay from "./PersonCardDisplay";
+import { QueryClient, QueryClientProvider } from "react-query";
 
 const educationLevels = [
   "İlkokul/Ortaokul",
@@ -91,10 +93,43 @@ const provinces = [
   "Osmaniye",
   "Düzce",
 ].sort((a, b) => a.localeCompare(b));
+
 const Board = () => {
-  const [selectedEducation, setSelectedEducation] = useState(["Üniversite"]);
+  const queryClient = new QueryClient();
+  const [selectedEducation, setSelectedEducation] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState("");
-  const [searchType, setSearchType] = useState("mentor");
+  const [searchType, setSearchType] = useState("Mentor");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+
+  const debouncedSearch = useCallback(
+    debounce((value) => {
+      setDebouncedSearchQuery(value);
+    }, 300),
+    []
+  );
+
+  useEffect(() => {
+    debouncedSearch(searchQuery);
+  }, [searchQuery, debouncedSearch]);
+
+  const handleEducationChange = (level) => {
+    setSelectedEducation((prev) =>
+      prev.includes(level) ? prev.filter((l) => l !== level) : [...prev, level]
+    );
+  };
+
+  const handleLocationChange = (e) => {
+    setSelectedLocation(e.target.value);
+  };
+
+  const handleSearchTypeChange = (type) => {
+    setSearchType(type);
+  };
+
+  const handleSearchInputChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
 
   return (
     <div className="container mx-auto mt-4 sm:mt-8 ">
@@ -111,6 +146,8 @@ const Board = () => {
                 type="text"
                 placeholder="Eğitim Teknolojileri, Biyoteknoloji, Robotik Kodlama..."
                 className="input input-bordered w-full"
+                value={searchQuery}
+                onChange={handleSearchInputChange}
               />
               <button className="btn btn-square mt-0">
                 <svg
@@ -139,17 +176,19 @@ const Board = () => {
               <div className="flex gap-2 flex-wrap">
                 <button
                   className={`btn btn-sm ${
-                    searchType === "mentor" ? "btn-primary" : "btn-outline"
+                    searchType === "Mentor" ? "btn-primary" : "btn-outline"
                   }`}
-                  onClick={() => setSearchType("mentor")}
+                  onClick={() => handleSearchTypeChange("Mentor")}
                 >
                   Mentor ara
                 </button>
                 <button
                   className={`btn btn-sm ${
-                    searchType === "ekip" ? "btn-primary" : "btn-outline"
+                    searchType === "Ekip Arkadaşı"
+                      ? "btn-primary"
+                      : "btn-outline"
                   }`}
-                  onClick={() => setSearchType("ekip")}
+                  onClick={() => handleSearchTypeChange("Ekip Arkadaşı")}
                 >
                   Ekip Arkadaşı ara
                 </button>
@@ -168,13 +207,7 @@ const Board = () => {
                         ? "btn-primary"
                         : "btn-outline"
                     }`}
-                    onClick={() => {
-                      setSelectedEducation((prev) =>
-                        prev.includes(level)
-                          ? prev.filter((l) => l !== level)
-                          : [...prev, level]
-                      );
-                    }}
+                    onClick={() => handleEducationChange(level)}
                   >
                     {level}
                   </button>
@@ -188,7 +221,7 @@ const Board = () => {
               <select
                 className="select select-bordered w-full max-w-xs"
                 value={selectedLocation}
-                onChange={(e) => setSelectedLocation(e.target.value)}
+                onChange={handleLocationChange}
               >
                 <option value="">Tüm Konumlar</option>
                 <option value="Outside of Turkey">Yurt Dışı</option>
@@ -203,7 +236,15 @@ const Board = () => {
 
           {/* Placeholder for future content */}
           <div className="h-px w-full bg-black my-8 sm:my-12"></div>
-          <PersonCardDisplay />
+
+          <QueryClientProvider client={queryClient}>
+            <PersonCardDisplay
+              searchQuery={debouncedSearchQuery}
+              searchType={searchType}
+              selectedEducation={selectedEducation}
+              selectedLocation={selectedLocation}
+            />
+          </QueryClientProvider>
         </div>
       </div>
     </div>

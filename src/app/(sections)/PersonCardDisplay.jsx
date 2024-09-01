@@ -1,51 +1,74 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useQuery } from "react-query";
 import PersonCard from "./PersonCard";
 
-const PersonCardDisplay = () => {
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
+const PersonCardDisplay = ({
+  searchQuery,
+  searchType,
+  selectedEducation,
+  selectedLocation,
+}) => {
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const limit = 6; // Number of posts per page
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(`/api/viewPosts?page=${page}&limit=6`);
-        const data = await response.json();
-        if (data.posts.length < 6) {
-          setHasMore(false);
-        }
-        setPosts((prevPosts) => {
-          const newPosts = data.posts.filter(
-            (post) => !prevPosts.some((p) => p._id === post._id)
-          );
-          return [...prevPosts, ...newPosts];
-        });
-      } catch (error) {
-        console.error("Error fetching posts:", error);
-      }
-      setLoading(false);
-    };
-    fetchPosts();
-  }, [page]);
-
-  const loadMore = () => {
-    setPage((prevPage) => prevPage + 1);
+  const fetchPosts = async ({ queryKey }) => {
+    const [_, params] = queryKey;
+    const response = await fetch(
+      `/api/viewPosts?${new URLSearchParams(params)}`
+    );
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+    return response.json();
   };
 
-  if (loading && posts.length === 0) {
+  // Memoize the query key to prevent unnecessary re-fetches
+  const queryKey = useMemo(
+    () => [
+      "posts",
+      {
+        page,
+        limit,
+        searchQuery,
+        searchType,
+        education: selectedEducation.join(","),
+        location: selectedLocation,
+      },
+    ],
+    [page, searchQuery, searchType, selectedEducation, selectedLocation]
+  );
+
+  const { data, isLoading, error } = useQuery(queryKey, fetchPosts, {
+    keepPreviousData: true,
+    staleTime: 5000, // Consider data fresh for 5 seconds
+  });
+
+  const posts = data?.posts || [];
+  const totalPosts = data?.totalPosts || 0;
+  const totalPages = Math.ceil(totalPosts / limit);
+
+  const handlePreviousPage = () => {
+    setPage((prevPage) => Math.max(prevPage - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setPage((prevPage) => Math.min(prevPage + 1, totalPages));
+  };
+
+  if (isLoading) {
+    return <div className="p-4 bg-base-200 rounded-lg">Yükleniyor...</div>;
+  }
+
+  if (error) {
     return (
-      <div className="p-4 bg-base-200 rounded-lg">
-        <p className="text-center text-gray-500">Loading...</p>
-      </div>
+      <div className="p-4 bg-base-200 rounded-lg">Error: {error.message}</div>
     );
   }
 
   if (posts.length === 0) {
     return (
       <div className="p-4 bg-base-200 rounded-lg">
-        <p className="text-center text-gray-500">Sonuç bulunamadı.</p>
+        <p className="text-center text-gray-500">No results found.</p>
       </div>
     );
   }
@@ -66,14 +89,25 @@ const PersonCardDisplay = () => {
           />
         ))}
       </div>
-
-      {hasMore && (
-        <div className="mt-4 text-center">
-          <button onClick={loadMore} className="btn btn-primary">
-            Load More
-          </button>
-        </div>
-      )}
+      <div className="mt-4 flex justify-between items-center">
+        <button
+          onClick={handlePreviousPage}
+          disabled={page === 1}
+          className="btn btn-primary"
+        >
+          Önceki
+        </button>
+        <span>
+          Sayfa {page} / {totalPages}
+        </span>
+        <button
+          onClick={handleNextPage}
+          disabled={page === totalPages}
+          className="btn btn-primary"
+        >
+          Sonraki
+        </button>
+      </div>
     </div>
   );
 };

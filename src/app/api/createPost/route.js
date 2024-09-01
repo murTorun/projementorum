@@ -14,8 +14,10 @@ export async function POST(req) {
       email,
       src,
       type,
+      location,
+      educationLevels, // Change this from educationLevel to educationLevels
       loggedEmail,
-    } = await req.json(); // Destructure form data
+    } = await req.json();
     if (!loggedEmail) {
       return NextResponse.json(
         { message: "Logged email is required" },
@@ -36,6 +38,8 @@ export async function POST(req) {
       email,
       src,
       type,
+      location,
+      educationLevels, // Change this from educationLevel to educationLevels
       loggedEmail,
     });
     console.log(newPost);
@@ -100,6 +104,8 @@ export async function PUT(req) {
       email,
       src,
       type,
+      location,
+      educationLevels, // Change this from educationLevel to educationLevels
       loggedEmail,
     } = await req.json();
     await connectMongoDB();
@@ -116,6 +122,8 @@ export async function PUT(req) {
         email,
         src,
         type,
+        location,
+        educationLevels, // Change this from educationLevel to educationLevels
       },
       { new: true }
     );
