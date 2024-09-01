@@ -141,12 +141,6 @@ export default function Login() {
 
         <div className="mt-6 flex flex-col space-y-2 text-center text-sm">
           <Link
-            href="/forgot-password"
-            className="font-medium text-blue-400 hover:text-blue-300"
-          >
-            Şifreni mi unuttun?
-          </Link>
-          <Link
             href={registerLink}
             className="font-medium text-blue-400 hover:text-blue-300"
           >
