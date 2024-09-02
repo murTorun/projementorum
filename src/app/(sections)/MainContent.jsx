@@ -57,7 +57,7 @@ const MainContent = () => {
                   Mentor Desteği
                 </h2>
                 <p>
-                  24/7 ulaşılabilir mentorlar ile projelerinizde yalnız
+                  7/24 ulaşılabilir mentorlar ile projelerinizde yalnız
                   kalmayın.
                 </p>
               </div>
